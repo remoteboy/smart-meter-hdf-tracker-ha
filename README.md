@@ -1,4 +1,4 @@
-# ESB Energy Tracker
+# Smart Meter HDF Tracker
 
 A self-hosted smart meter data pipeline for ESB Networks (Ireland) customers. Downloads your 30-minute interval data nightly, stores it in SQLite, exposes a REST API with accurate Irish tariff cost calculations, and integrates with Home Assistant.
 
