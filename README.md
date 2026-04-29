@@ -378,15 +378,15 @@ Alternatively, install manually via the Docker tab using the template in `unraid
 
 ## Contributing
 
-Pull requests welcome. Areas for improvement:
-
-- Support for other Irish suppliers (Energia, Electric Ireland) — same ESB smart meter infrastructure
-- Billing period tracking with comparison to actual bills
-- Spend threshold notifications via HA
-- Gas meter support
+Please do not submit pull requests at this time. This is very much an early beta. 
 
 ---
 
 ## Licence
 
 MIT
+
+---
+
+## Credits
+This project was built in collaboration with Claude (Anthropic's AI assistant), which designed and wrote the majority of the code across a long session covering the scraper, tariff engine, API, dashboard, Home Assistant integration, and Docker/Unraid support.
