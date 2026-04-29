@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>esb-energy</Name>
-  <Repository>ghcr.io/yourusername/esb-energy:latest</Repository>
-  <Registry>https://github.com/yourusername/esb-energy/pkgs/container/esb-energy</Registry>
+  <Name>smart-meter-hdf-tracker-ha</Name>
+  <Repository>ghcr.io/remoteboy/smart-meter-hdf-tracker-ha:latest</Repository>
+  <Registry>https://github.com/remoteboy/smart-meter-hdf-tracker-ha/pkgs/container/smart-meter-hdf-tracker-ha</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/yourusername/esb-energy</Support>
-  <Project>https://github.com/yourusername/esb-energy</Project>
+  <Support>https://github.com/remoteboy/smart-meter-hdf-tracker-ha</Support>
+  <Project>https://github.com/remoteboy/smart-meter-hdf-tracker-ha</Project>
   <Overview>
     Self-hosted smart meter data tracker for ESB Networks (Ireland) customers.
     Downloads your 30-minute interval data nightly, calculates accurate costs
@@ -16,7 +16,7 @@
   </Overview>
   <Category>HomeAutomation: Tools:</Category>
   <WebUI>http://[IP]:[PORT:8000]/dashboard/</WebUI>
-  <Icon>https://raw.githubusercontent.com/yourusername/esb-energy/main/docs/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/remoteboy/smart-meter-hdf-tracker-ha/main/docs/icon.png</Icon>
   <ExtraParams>--restart=unless-stopped</ExtraParams>
   <DateInstalled></DateInstalled>
   <DonateText></DonateText>
@@ -26,8 +26,8 @@
   <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp"
     Description="Port for the web dashboard and API" Type="Port" Display="always" Required="true" Mask="false">8000</Config>
 
-  <Config Name="Data Directory" Target="/data" Default="/mnt/user/appdata/esb-energy/data"
-    Description="Persistent storage for the SQLite database, cookies and downloaded CSVs" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/esb-energy/data</Config>
+  <Config Name="Data Directory" Target="/data" Default="/mnt/user/appdata/smart-meter-hdf-tracker-ha/data"
+    Description="Persistent storage for the SQLite database, cookies and downloaded CSVs" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/smart-meter-hdf-tracker-ha/data</Config>
 
   <Config Name="ESB Username" Target="ESB_USERNAME" Default=""
     Description="Your ESB Networks login email" Type="Variable" Display="always" Required="true" Mask="false"></Config>

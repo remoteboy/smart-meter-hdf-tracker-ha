@@ -391,3 +391,5 @@ MIT
 ## Credits
 
 This project was built in collaboration with [Claude](https://claude.ai) (Anthropic's AI assistant), which designed and wrote the majority of the code across a long session covering the scraper, tariff engine, API, dashboard, Home Assistant integration, and Docker/Unraid support.
+
+Icon by [Heroicons](https://heroicons.com) (MIT licence).
