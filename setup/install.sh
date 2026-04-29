@@ -1,9 +1,9 @@
 #!/bin/bash
 # Run inside the LXC container after copying app files
-# pct exec <CTID> -- bash /opt/esb-energy/setup/install.sh
+# pct exec <CTID> -- bash /opt/smart-meter-hdf-tracker-ha/setup/install.sh
 
 set -e
-APP_DIR=/opt/esb-energy
+APP_DIR=/opt/smart-meter-hdf-tracker-ha
 
 echo "==> Setting up Python virtual environment..."
 python3 -m venv $APP_DIR/venv

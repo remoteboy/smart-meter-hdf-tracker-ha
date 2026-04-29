@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=esb
-WorkingDirectory=/opt/esb-energy
-ExecStart=/opt/esb-energy/venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8000
+WorkingDirectory=/opt/smart-meter-hdf-tracker-ha
+ExecStart=/opt/smart-meter-hdf-tracker-ha/venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 

@@ -1,10 +1,10 @@
 services:
-  esb-energy:
-    image: esb-energy:latest
+  smart-meter-hdf-tracker-ha:
+    image: smart-meter-hdf-tracker-ha:latest
     # Or use a pre-built image:
-    # image: ghcr.io/yourusername/esb-energy:latest
+    # image: ghcr.io/remoteboy/smart-meter-hdf-tracker-ha:latest
     build: .
-    container_name: esb-energy
+    container_name: smart-meter-hdf-tracker-ha
     restart: unless-stopped
     ports:
       - "8000:8000"

@@ -33,7 +33,7 @@ A self-hosted smart meter data pipeline for ESB Networks (Ireland) customers. Do
 ESB Networks website
         │  Playwright scraper — nightly 02:30, systemd timer
         ▼
-  SQLite database          /opt/esb-energy/data/energy.db
+  SQLite database          /opt/smart-meter-hdf-tracker-ha/data/energy.db
         │
         ▼
   FastAPI REST API         http://<LXC-IP>:8000
@@ -60,15 +60,15 @@ bash setup/create-lxc.sh
 ### 2. Copy the app into the container
 
 ```bash
-tar czf /tmp/esb-energy.tar.gz esb-energy/
-pct push <CTID> /tmp/esb-energy.tar.gz /tmp/esb-energy.tar.gz
-pct exec <CTID> -- bash -c "cd /opt && tar xzf /tmp/esb-energy.tar.gz"
+tar czf /tmp/smart-meter-hdf-tracker-ha.tar.gz smart-meter-hdf-tracker-ha/
+pct push <CTID> /tmp/smart-meter-hdf-tracker-ha.tar.gz /tmp/smart-meter-hdf-tracker-ha.tar.gz
+pct exec <CTID> -- bash -c "cd /opt && tar xzf /tmp/smart-meter-hdf-tracker-ha.tar.gz"
 ```
 
 ### 3. Configure
 
 ```bash
-pct exec <CTID> -- nano /opt/esb-energy/config.json
+pct exec <CTID> -- nano /opt/smart-meter-hdf-tracker-ha/config.json
 ```
 
 Set your ESB credentials, MPRN, tariff rates and 2captcha API key. See [Configuration](#configuration).
@@ -76,7 +76,7 @@ Set your ESB credentials, MPRN, tariff rates and 2captcha API key. See [Configur
 ### 4. Install
 
 ```bash
-pct exec <CTID> -- bash /opt/esb-energy/setup/install.sh
+pct exec <CTID> -- bash /opt/smart-meter-hdf-tracker-ha/setup/install.sh
 ```
 
 ### 5. Load historical data
@@ -85,8 +85,8 @@ Download your full history CSV from ESB Networks (Downloads → 30-minute readin
 
 ```bash
 pct push <CTID> HDF_calckWh_*.csv /tmp/history.csv
-pct exec <CTID> -- bash -c "cd /opt/esb-energy && \
-    /opt/esb-energy/venv/bin/python -m scraper.ingest_csv /tmp/history.csv"
+pct exec <CTID> -- bash -c "cd /opt/smart-meter-hdf-tracker-ha && \
+    /opt/smart-meter-hdf-tracker-ha/venv/bin/python -m scraper.ingest_csv /tmp/history.csv"
 ```
 
 ESB provides up to two years of history in this file.
@@ -148,7 +148,7 @@ Open `http://<LXC-IP>:8000/dashboard/` to see the web dashboard.
 
   "vat_rate": 0.09,
   "two_captcha_api_key": "your_key_here",
-  "data_dir": "/opt/esb-energy/data"
+  "data_dir": "/opt/smart-meter-hdf-tracker-ha/data"
 }
 ```
 
@@ -225,7 +225,7 @@ journalctl -u esb-api -f
 journalctl -u esb-scraper -n 50
 
 # Run scraper manually
-cd /opt/esb-energy && /opt/esb-energy/venv/bin/python -m scraper.download
+cd /opt/smart-meter-hdf-tracker-ha && /opt/smart-meter-hdf-tracker-ha/venv/bin/python -m scraper.download
 
 # Restart API after config change
 systemctl restart esb-api
@@ -252,8 +252,8 @@ ESB limits fresh logins to approximately 3 per day before triggering CAPTCHA, so
 ## File structure
 
 ```
-esb-energy/
-├── config.json                     Your configuration (keep private)
+smart-meter-hdf-tracker-ha/
+├── config.example.json             Example configuration (copy to config.json)
 ├── scraper/
 │   ├── download.py                 Scraper — login, download, ingest
 │   └── ingest_csv.py               One-shot historical CSV importer
@@ -266,6 +266,8 @@ esb-energy/
 ├── ha/
 │   ├── configuration_snippet.yaml  HA sensor definitions
 │   └── lovelace-complete.yaml      HA Lovelace dashboard
+├── unraid/
+│   └── smart-meter-hdf-tracker-ha.xml              Unraid Community Applications template
 └── setup/
     ├── create-lxc.sh               Proxmox LXC creation
     ├── install.sh                  App installation
@@ -281,7 +283,7 @@ esb-energy/
 **Permission denied on cookies file**
 The cookie file was created by root. Fix:
 ```bash
-chown -R esb:esb /opt/esb-energy/data
+chown -R esb:esb /opt/smart-meter-hdf-tracker-ha/data
 ```
 
 **Session expires every night**
@@ -291,11 +293,10 @@ Sessions should last days. If expiring nightly, the permissions issue above is l
 Once sessions persist correctly, CAPTCHA is rare. If it triggers every night, fix permissions first.
 
 **Download button not found**
-ESB may have updated their page. Check the debug screenshots saved to `/opt/esb-energy/data/`.
+ESB may have updated their page. Check the debug screenshots saved to `/opt/smart-meter-hdf-tracker-ha/data/`.
 
 **API shows stale data**
 ESB data is typically 24–48 hours behind. The most recent reading is usually from two days ago — this is normal.
-
 
 ---
 
@@ -307,17 +308,17 @@ A Docker image is provided for users not running Proxmox.
 
 ```bash
 git clone https://github.com/remoteboy/smart-meter-hdf-tracker-ha
-cd esb-energy
-cp docker-compose.yml docker-compose.override.yml
-# Edit docker-compose.override.yml with your credentials
+cd smart-meter-hdf-tracker-ha
+cp config.example.json config.json
+# Edit config.json with your credentials and tariff rates
 docker compose up -d
 ```
 
-Or set environment variables directly:
+Or using environment variables:
 
 ```bash
 docker run -d \
-  --name esb-energy \
+  --name smart-meter-hdf-tracker-ha \
   --restart unless-stopped \
   -p 8000:8000 \
   -v ./data:/data \
@@ -326,7 +327,7 @@ docker run -d \
   -e ESB_PASSWORD=yourpassword \
   -e ESB_MPRN=10001234567 \
   -e TWO_CAPTCHA_KEY=your_key \
-  esb-energy:latest
+  ghcr.io/remoteboy/smart-meter-hdf-tracker-ha:latest
 ```
 
 ### Environment variables
@@ -352,7 +353,7 @@ Unit rates, standing charges and PSO levy can't be set via environment variables
 ```bash
 cp config.example.json config.json
 # Edit config.json with your tariff history
-docker run ... -v ./config.json:/app/config.json:ro esb-energy:latest
+docker run ... -v ./config.json:/app/config.json:ro ghcr.io/remoteboy/smart-meter-hdf-tracker-ha:latest
 ```
 
 See `config.example.json` for the full format.
@@ -360,25 +361,24 @@ See `config.example.json` for the full format.
 ### Loading historical data in Docker
 
 ```bash
-# Copy your downloaded CSV into the container and ingest it
-docker cp HDF_calckWh_*.csv esb-energy:/tmp/history.csv
-docker exec esb-energy python -m scraper.ingest_csv /tmp/history.csv
+docker cp HDF_calckWh_*.csv smart-meter-hdf-tracker-ha:/tmp/history.csv
+docker exec smart-meter-hdf-tracker-ha python -m scraper.ingest_csv /tmp/history.csv
 ```
 
 ### Unraid
 
-1. In Community Applications, search for **ESB Energy**
+1. In Community Applications, search for **Smart Meter HDF Tracker**
 2. Fill in your ESB credentials, MPRN and 2captcha key
 3. Set the appdata path and click Install
 4. Open `http://<unraid-ip>:8000/dashboard/` to verify
 
-Alternatively, install manually via the Docker tab using the template in `unraid/esb-energy.xml`.
+Alternatively, install manually via the Docker tab using the template in `unraid/smart-meter-hdf-tracker-ha.xml`.
 
 ---
 
 ## Contributing
 
-Please do not submit pull requests at this time. This is very much an early beta. 
+Please do not submit pull requests at this time. This is very much an early beta.
 
 ---
 
@@ -389,4 +389,5 @@ MIT
 ---
 
 ## Credits
-This project was built in collaboration with Claude (Anthropic's AI assistant), which designed and wrote the majority of the code across a long session covering the scraper, tariff engine, API, dashboard, Home Assistant integration, and Docker/Unraid support.
+
+This project was built in collaboration with [Claude](https://claude.ai) (Anthropic's AI assistant), which designed and wrote the majority of the code across a long session covering the scraper, tariff engine, API, dashboard, Home Assistant integration, and Docker/Unraid support.

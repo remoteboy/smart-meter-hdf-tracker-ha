@@ -6,7 +6,7 @@
 set -e
 
 CTID=200          # Change if 200 is taken
-HOSTNAME="esb-energy"
+HOSTNAME="smart-meter-hdf-tracker-ha"
 STORAGE="local-lvm"   # Change to your storage pool (check: pvesm status)
 BRIDGE="vmbr0"
 IP="192.168.1.200/24"  # Change to a free IP on your LAN
@@ -45,8 +45,8 @@ pct exec $CTID -- bash -c "
 
   # Create app user
   useradd -m -s /bin/bash esb
-  mkdir -p /opt/esb-energy
-  chown esb:esb /opt/esb-energy
+  mkdir -p /opt/smart-meter-hdf-tracker-ha
+  chown esb:esb /opt/smart-meter-hdf-tracker-ha
 "
 
 echo ""
@@ -55,5 +55,5 @@ echo "    Container ID : $CTID"
 echo "    IP Address   : ${IP%/*}"
 echo ""
 echo "Next: Copy the app files and run setup/install.sh inside the container:"
-echo "  pct push $CTID ./esb-energy.tar.gz /opt/esb-energy.tar.gz"
-echo "  pct exec $CTID -- bash /opt/esb-energy/setup/install.sh"
+echo "  pct push $CTID ./smart-meter-hdf-tracker-ha.tar.gz /opt/smart-meter-hdf-tracker-ha.tar.gz"
+echo "  pct exec $CTID -- bash /opt/smart-meter-hdf-tracker-ha/setup/install.sh"
