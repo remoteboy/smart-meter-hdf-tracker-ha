@@ -11,6 +11,8 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from api.tariff import daily_summary, load_config
 
@@ -30,6 +32,13 @@ app = FastAPI(
     description="Smart meter import/export data with Irish tariff cost calculations",
     version="1.0.0",
 )
+
+
+
+# Serve dashboard at /dashboard
+_dashboard = Path(__file__).parent.parent / "dashboard"
+if _dashboard.exists():
+    app.mount("/dashboard", StaticFiles(directory=str(_dashboard), html=True), name="dashboard")
 
 app.add_middleware(
     CORSMiddleware,
@@ -284,7 +293,7 @@ def ha_sensors():
             return {k: 0 for k in [
                 "import_day_kwh","import_night_kwh","export_kwh",
                 "import_day_cost","import_night_cost","export_credit",
-                "standing_charges","vat","total_cost"
+                "standing_charge","pso_levy","vat","total_cost"
             ]}
         return daily_summary(rows, config)
 
@@ -296,7 +305,6 @@ def ha_sensors():
     y  = safe_summary(yest_rows)
     m  = safe_summary(month_rows)
 
-    # Latest reading time
     latest = conn.execute(
         "SELECT MAX(reading_dt) as dt FROM readings"
     ).fetchone()["dt"]
@@ -308,23 +316,32 @@ def ha_sensors():
         "today_import_day_kwh":    t["import_day_kwh"],
         "today_import_night_kwh":  t["import_night_kwh"],
         "today_export_kwh":        t["export_kwh"],
-        "today_cost":              t["total_cost"],
         "today_import_cost":       round(t["import_day_cost"] + t["import_night_cost"], 4),
         "today_export_credit":     t["export_credit"],
+        "today_standing_charge":   t["standing_charge"],
+        "today_pso_levy":          t["pso_levy"],
+        "today_vat":               t["vat"],
+        "today_total_cost":        t["total_cost"],
 
         # Yesterday
         "yesterday_import_kwh":    round(y["import_day_kwh"] + y["import_night_kwh"], 3),
         "yesterday_export_kwh":    y["export_kwh"],
-        "yesterday_cost":          y["total_cost"],
         "yesterday_import_cost":   round(y["import_day_cost"] + y["import_night_cost"], 4),
         "yesterday_export_credit": y["export_credit"],
+        "yesterday_standing_charge": y["standing_charge"],
+        "yesterday_pso_levy":      y["pso_levy"],
+        "yesterday_vat":           y["vat"],
+        "yesterday_total_cost":    y["total_cost"],
 
         # Month to date
         "month_import_kwh":        round(m["import_day_kwh"] + m["import_night_kwh"], 3),
         "month_export_kwh":        m["export_kwh"],
-        "month_cost":              m["total_cost"],
         "month_import_cost":       round(m["import_day_cost"] + m["import_night_cost"], 4),
         "month_export_credit":     m["export_credit"],
+        "month_standing_charge":   m["standing_charge"],
+        "month_pso_levy":          m["pso_levy"],
+        "month_vat":               m["vat"],
+        "month_total_cost":        m["total_cost"],
 
         # Meta
         "data_as_of":              latest,
