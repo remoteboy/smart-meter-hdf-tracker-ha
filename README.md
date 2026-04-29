@@ -306,7 +306,7 @@ A Docker image is provided for users not running Proxmox.
 ### Quick start with Docker Compose
 
 ```bash
-git clone https://github.com/yourusername/esb-energy
+git clone https://github.com/remoteboy/smart-meter-hdf-tracker-ha
 cd esb-energy
 cp docker-compose.yml docker-compose.override.yml
 # Edit docker-compose.override.yml with your credentials
