@@ -1,0 +1,14 @@
+config.json
+data/
+*.pyc
+__pycache__/
+venv/
+*.csv
+*.db
+*.json.bak
+.env
+debug_*.png
+debug_*.html
+.DS_Store
+.vscode/
+live/

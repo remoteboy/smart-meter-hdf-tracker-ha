@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>esb-energy</Name>
+  <Repository>ghcr.io/yourusername/esb-energy:latest</Repository>
+  <Registry>https://github.com/yourusername/esb-energy/pkgs/container/esb-energy</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/yourusername/esb-energy</Support>
+  <Project>https://github.com/yourusername/esb-energy</Project>
+  <Overview>
+    Self-hosted smart meter data tracker for ESB Networks (Ireland) customers.
+    Downloads your 30-minute interval data nightly, calculates accurate costs
+    using your day/night tariff rates, and integrates with Home Assistant.
+    Requires an ESB Networks account and a 2captcha API key.
+  </Overview>
+  <Category>HomeAutomation: Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8000]/dashboard/</WebUI>
+  <Icon>https://raw.githubusercontent.com/yourusername/esb-energy/main/docs/icon.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <DateInstalled></DateInstalled>
+  <DonateText></DonateText>
+  <DonateLink></DonateLink>
+  <Requires>2captcha account with credit</Requires>
+
+  <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp"
+    Description="Port for the web dashboard and API" Type="Port" Display="always" Required="true" Mask="false">8000</Config>
+
+  <Config Name="Data Directory" Target="/data" Default="/mnt/user/appdata/esb-energy/data"
+    Description="Persistent storage for the SQLite database, cookies and downloaded CSVs" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/esb-energy/data</Config>
+
+  <Config Name="ESB Username" Target="ESB_USERNAME" Default=""
+    Description="Your ESB Networks login email" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+
+  <Config Name="ESB Password" Target="ESB_PASSWORD" Default=""
+    Description="Your ESB Networks password" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="MPRN" Target="ESB_MPRN" Default=""
+    Description="Your Meter Point Reference Number (shown on your electricity bill)" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+
+  <Config Name="2captcha API Key" Target="TWO_CAPTCHA_KEY" Default=""
+    Description="API key from 2captcha.com — needed for automated login. ~€2-3/month." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="Scraper Time" Target="SCRAPER_TIME" Default="02:30"
+    Description="Time to run the nightly download in 24h format (container local time)" Type="Variable" Display="advanced" Required="false" Mask="false">02:30</Config>
+
+  <Config Name="Run On Start" Target="RUN_ON_START" Default="false"
+    Description="Set to true to download data immediately when the container starts" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+
+  <Config Name="Night Rate Start" Target="NIGHT_START" Default="23:00"
+    Description="Start of night rate window (Irish clock time)" Type="Variable" Display="advanced" Required="false" Mask="false">23:00</Config>
+
+  <Config Name="Night Rate End" Target="NIGHT_END" Default="08:00"
+    Description="End of night rate window (Irish clock time)" Type="Variable" Display="advanced" Required="false" Mask="false">08:00</Config>
+
+  <Config Name="VAT Rate" Target="VAT_RATE" Default="0.09"
+    Description="VAT rate as a decimal (0.09 = 9%)" Type="Variable" Display="advanced" Required="false" Mask="false">0.09</Config>
+
+  <Config Name="Timezone" Target="TZ" Default="Europe/Dublin"
+    Description="Container timezone — must match your location for correct DST handling" Type="Variable" Display="advanced" Required="false" Mask="false">Europe/Dublin</Config>
+</Container>

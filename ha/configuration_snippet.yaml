@@ -1,0 +1,127 @@
+# ============================================================
+# ESB Energy Tracker — Home Assistant configuration
+# ============================================================
+# Add this to your configuration.yaml (or split into packages)
+# Replace YOUR_LXC_IP with your LXC container's IP.
+#
+# After adding, restart HA and the sensors will appear under:
+#   sensor.esb_*
+
+rest:
+  - resource: http://YOUR_LXC_IP:8000/ha/sensors
+    scan_interval: 3600 # Poll hourly — data only updates nightly
+    sensor:
+      # ── Today ────────────────────────────────────────────────
+      - name: "ESB Today Import kWh"
+        unique_id: esb_today_import_kwh
+        value_template: "{{ value_json.today_import_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "ESB Today Import Day kWh"
+        unique_id: esb_today_import_day_kwh
+        value_template: "{{ value_json.today_import_day_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Today Import Night kWh"
+        unique_id: esb_today_import_night_kwh
+        value_template: "{{ value_json.today_import_night_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Today Export kWh"
+        unique_id: esb_today_export_kwh
+        value_template: "{{ value_json.today_export_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Today Cost"
+        unique_id: esb_today_cost
+        value_template: "{{ value_json.today_cost }}"
+        unit_of_measurement: EUR
+        icon: mdi:currency-eur
+
+      - name: "ESB Today Import Cost"
+        unique_id: esb_today_import_cost
+        value_template: "{{ value_json.today_import_cost }}"
+        unit_of_measurement: EUR
+
+      - name: "ESB Today Export Credit"
+        unique_id: esb_today_export_credit
+        value_template: "{{ value_json.today_export_credit }}"
+        unit_of_measurement: EUR
+
+      # ── Yesterday ────────────────────────────────────────────
+      - name: "ESB Yesterday Import kWh"
+        unique_id: esb_yesterday_import_kwh
+        value_template: "{{ value_json.yesterday_import_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Yesterday Export kWh"
+        unique_id: esb_yesterday_export_kwh
+        value_template: "{{ value_json.yesterday_export_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Yesterday Cost"
+        unique_id: esb_yesterday_cost
+        value_template: "{{ value_json.yesterday_cost }}"
+        unit_of_measurement: EUR
+        icon: mdi:currency-eur
+
+      - name: "ESB Yesterday Export Credit"
+        unique_id: esb_yesterday_export_credit
+        value_template: "{{ value_json.yesterday_export_credit }}"
+        unit_of_measurement: EUR
+
+      # ── Month to date ─────────────────────────────────────────
+      - name: "ESB Month Import kWh"
+        unique_id: esb_month_import_kwh
+        value_template: "{{ value_json.month_import_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Month Export kWh"
+        unique_id: esb_month_export_kwh
+        value_template: "{{ value_json.month_export_kwh }}"
+        unit_of_measurement: kWh
+        device_class: energy
+
+      - name: "ESB Month Cost"
+        unique_id: esb_month_cost
+        value_template: "{{ value_json.month_cost }}"
+        unit_of_measurement: EUR
+        icon: mdi:currency-eur
+
+      - name: "ESB Month Export Credit"
+        unique_id: esb_month_export_credit
+        value_template: "{{ value_json.month_export_credit }}"
+        unit_of_measurement: EUR
+
+      # ── Meta ──────────────────────────────────────────────────
+      - name: "ESB Data As Of"
+        unique_id: esb_data_as_of
+        value_template: "{{ value_json.data_as_of }}"
+        icon: mdi:clock-check
+
+# ── Template sensors (derived) ───────────────────────────────────────────────
+template:
+  - sensor:
+      - name: "ESB Today Net Cost"
+        unique_id: esb_today_net_cost
+        state: >
+          {{ (states('sensor.esb_today_cost') | float(0)) -
+             (states('sensor.esb_today_export_credit') | float(0)) | round(2) }}
+        unit_of_measurement: EUR
+        icon: mdi:currency-eur
+
+      - name: "ESB Month Net Cost"
+        unique_id: esb_month_net_cost
+        state: >
+          {{ (states('sensor.esb_month_cost') | float(0)) -
+             (states('sensor.esb_month_export_credit') | float(0)) | round(2) }}
+        unit_of_measurement: EUR
+        icon: mdi:currency-eur

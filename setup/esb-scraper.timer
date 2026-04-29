@@ -1,0 +1,11 @@
+[Unit]
+Description=ESB Energy Scraper - nightly download
+Requires=esb-scraper.service
+
+[Timer]
+# 02:30 each night - ESB data is typically available by then
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

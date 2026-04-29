@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy monitor</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --raised: #21262d;
+            --border: #30363d;
+            --border-hi: #6e7681;
+            --text: #e6edf3;
+            --muted: #b1bac4;
+            --subtle: #7d8590;
+            --import: #58a6ff;
+            --night: #bc8cff;
+            --export: #3fb950;
+            --cost: #f78166;
+            --amber: #e3b341;
+            --mono: 'DM Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 16px
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .header h1 {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        .as-of {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--subtle)
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px
+        }
+
+        .tab {
+            padding: 10px 18px;
+            font-size: 13px;
+            font-family: var(--sans);
+            font-weight: 400;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--subtle);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .15s, border-color .15s
+        }
+
+        .tab:hover {
+            color: var(--muted)
+        }
+
+        .tab.active {
+            color: var(--text);
+            font-weight: 500;
+            border-bottom-color: var(--import)
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px
+        }
+
+        .metric {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+            letter-spacing: 0.03em
+        }
+
+        .metric-value {
+            font-family: var(--mono);
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1
+        }
+
+        .metric-sub {
+            font-size: 11px;
+            color: var(--subtle);
+            margin-top: 5px
+        }
+
+        .gn {
+            color: #3fb950
+        }
+
+        .rd {
+            color: #f78166
+        }
+
+        .am {
+            color: #e3b341
+        }
+
+        .bl {
+            color: #58a6ff
+        }
+
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            margin-bottom: 12px
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0
+        }
+
+        .legend-dash {
+            width: 22px;
+            height: 0;
+            flex-shrink: 0
+        }
+
+        .date-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap
+        }
+
+        input[type=date] {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 6px 10px;
+            outline: none;
+            color-scheme: dark
+        }
+
+        input[type=date]:focus {
+            border-color: var(--import);
+            outline: 2px solid rgba(88, 166, 255, 0.25);
+            outline-offset: 0
+        }
+
+        .sep {
+            font-size: 13px;
+            color: var(--subtle)
+        }
+
+        .btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-family: var(--sans);
+            font-weight: 500;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--raised);
+            color: var(--text);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: border-color .15s
+        }
+
+        .btn:hover {
+            border-color: var(--border-hi)
+        }
+
+        .btn.primary {
+            border-color: var(--import);
+            color: var(--import)
+        }
+
+        .btn.primary:hover {
+            background: rgba(88, 166, 255, 0.1)
+        }
+
+        .btn.quick {
+            font-size: 12px;
+            padding: 5px 10px;
+            color: var(--muted)
+        }
+
+        .btn.quick:hover {
+            color: var(--text)
+        }
+
+        .mode-btns {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px
+        }
+
+        .mode-btn {
+            padding: 5px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: var(--sans);
+            transition: all .12s
+        }
+
+        .mode-btn:hover {
+            color: var(--text);
+            border-color: var(--border-hi)
+        }
+
+        .mode-btn.active {
+            background: var(--raised);
+            color: var(--text);
+            border-color: var(--border-hi);
+            font-weight: 500
+        }
+
+        .breakdown {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px
+        }
+
+        .brow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px
+        }
+
+        .brow:last-child {
+            border-bottom: none
+        }
+
+        .brow.total {
+            background: var(--raised);
+            font-weight: 500;
+            font-size: 14px
+        }
+
+        .blabel {
+            color: var(--muted)
+        }
+
+        .bval {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text)
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 10px
+        }
+
+        .spinner {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--subtle);
+            font-size: 13px
+        }
+
+        .err {
+            color: var(--cost)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Energy monitor</h1>
+        <span class="as-of" id="as-of">—</span>
+    </div>
+    <div class="tabs" role="tablist">
+        <button class="tab active" role="tab" onclick="switchTab('overview')">Overview</button>
+        <button class="tab" role="tab" onclick="switchTab('usage')">Usage</button>
+        <button class="tab" role="tab" onclick="switchTab('cost')">Cost</button>
+        <button class="tab" role="tab" onclick="switchTab('billing')">Billing</button>
+    </div>
+
+    <div id="pane-overview">
+        <div class="date-row">
+            <input type="date" id="ov-s"><span class="sep">to</span><input type="date" id="ov-e">
+            <button class="btn primary" onclick="loadOv()">Load</button>
+            <button class="btn quick" onclick="qr('ov',7)">7d</button>
+            <button class="btn quick" onclick="qr('ov',30)">30d</button>
+            <button class="btn quick" onclick="qr('ov',90)">90d</button>
+        </div>
+        <div class="metrics" id="ov-m">
+            <div class="spinner">Loading…</div>
+        </div>
+        <div class="mode-btns">
+            <button class="mode-btn active" id="mb-cost" onclick="switchMode('cost')">Cost €</button>
+            <button class="mode-btn" id="mb-kwh" onclick="switchMode('kwh')">kWh</button>
+        </div>
+        <div class="chart-wrap"><canvas id="ov-c" role="img" aria-label="Daily energy overview chart"></canvas></div>
+        <div class="legend" id="ov-l"></div>
+    </div>
+
+    <div id="pane-usage" style="display:none">
+        <div class="date-row">
+            <input type="date" id="us-s"><span class="sep">to</span><input type="date" id="us-e">
+            <button class="btn primary" onclick="loadUs()">Load</button>
+            <button class="btn quick" onclick="qr('us',14)">14d</button>
+            <button class="btn quick" onclick="qr('us',30)">30d</button>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="us-c" role="img" aria-label="Daily kWh chart"></canvas>
+        </div>
+        <div class="legend" id="us-l"></div>
+    </div>
+
+    <div id="pane-cost" style="display:none">
+        <div class="date-row">
+            <input type="date" id="co-s"><span class="sep">to</span><input type="date" id="co-e">
+            <button class="btn primary" onclick="loadCo()">Load</button>
+            <button class="btn quick" onclick="qr('co',30)">30d</button>
+            <button class="btn quick" onclick="qr('co',90)">90d</button>
+        </div>
+        <div id="co-bd"></div>
+        <div class="chart-wrap"><canvas id="co-c" role="img" aria-label="Daily cost chart"></canvas></div>
+    </div>
+
+    <div id="pane-billing" style="display:none">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Enter your ESB billing period
+            dates to estimate your bill. ESB bills every two months.</p>
+        <div class="date-row">
+            <input type="date" id="bi-s"><span class="sep">to</span><input type="date" id="bi-e">
+            <button class="btn primary" onclick="loadBi()">Calculate</button>
+        </div>
+        <div id="bi-r"></div>
+    </div>
+
+    <script>
+        const API = 'http://YOUR_LXC_IP:8000';
+        let CH = {}, mode = 'cost';
+        const td = () => new Date().toISOString().slice(0, 10);
+        const da = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+        const eu = n => n == null ? '—' : (n < 0 ? '-' : '') + '€' + Math.abs(n).toFixed(2);
+
+        function init() {
+            ['ov', 'us', 'co'].forEach(p => {
+                document.getElementById(p + '-s').value = da(30);
+                document.getElementById(p + '-e').value = td();
+            });
+        }
+
+        function qr(p, d) {
+            document.getElementById(p + '-s').value = da(d);
+            document.getElementById(p + '-e').value = td();
+            if (p === 'ov') loadOv(); else if (p === 'us') loadUs(); else loadCo();
+        }
+
+        function killC(id) { if (CH[id]) { CH[id].destroy(); delete CH[id]; } }
+
+        function switchTab(t) {
+            ['overview', 'usage', 'cost', 'billing'].forEach(x => {
+                document.getElementById('pane-' + x).style.display = x === t ? '' : 'none';
+            });
+            document.querySelectorAll('.tab').forEach((el, i) => {
+                el.classList.toggle('active', ['overview', 'usage', 'cost', 'billing'][i] === t);
+            });
+        }
+
+        function switchMode(m) {
+            mode = m;
+            document.getElementById('mb-cost').classList.toggle('active', m === 'cost');
+            document.getElementById('mb-kwh').classList.toggle('active', m === 'kwh');
+            loadOv();
+        }
+
+        const OPTS = yfmt => ({
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#21262d', titleColor: '#e6edf3', bodyColor: '#b1bac4', borderColor: '#30363d', borderWidth: 1, padding: 12, cornerRadius: 6 } },
+            scales: {
+                x: { grid: { color: 'rgba(48,54,61,0.6)' }, ticks: { color: '#7d8590', font: { size: 11, family: "'DM Mono'" } } },
+                y: { grid: { color: 'rgba(48,54,61,0.6)' }, ticks: { color: '#7d8590', font: { size: 11, family: "'DM Mono'" }, callback: yfmt } }
+            }
+        });
+
+        function legend(elId, items) {
+            document.getElementById(elId).innerHTML = items.map(([c, l, d]) =>
+                `<div class="legend-item"><span class="${d ? 'legend-dash' : 'legend-dot'}" style="${d ? `border-top:2px dashed ${c}` : `background:${c}`}" aria-hidden="true"></span>${l}</div>`
+            ).join('');
+        }
+
+        async function loadOv() {
+            const s = document.getElementById('ov-s').value, e = document.getElementById('ov-e').value;
+            document.getElementById('ov-m').innerHTML = '<div class="spinner">Loading…</div>';
+            try {
+                const [r1, r2] = await Promise.all([fetch(`${API}/range?start=${s}&end=${e}`), fetch(`${API}/billing?start=${s}&end=${e}`)]);
+                const [range, summ] = await Promise.all([r1.json(), r2.json()]);
+                const ti = range.reduce((a, d) => a + d.import_day_kwh + d.import_night_kwh, 0);
+                const te = range.reduce((a, d) => a + d.export_kwh, 0);
+                const net = summ.total_cost, cred = summ.export_credit;
+                document.getElementById('ov-m').innerHTML = `
+      <div class="metric">
+        <div class="metric-label">Net cost</div>
+        <div class="metric-value ${net < 0 ? 'gn' : 'rd'}">${eu(net)}</div>
+        <div class="metric-sub">${net < 0 ? 'in credit' : 'total spend'}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Export credit</div>
+        <div class="metric-value gn">${eu(cred)}</div>
+        <div class="metric-sub">${te.toFixed(1)} kWh exported</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Grid import</div>
+        <div class="metric-value bl">${ti.toFixed(1)} <span style="font-size:14px;font-weight:400">kWh</span></div>
+        <div class="metric-sub">from grid</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Daily average</div>
+        <div class="metric-value ${net / range.length < 0 ? 'gn' : 'am'}">${eu(net / range.length)}</div>
+        <div class="metric-sub">net, inc all charges</div>
+      </div>`;
+                killC('ov');
+                const lb = range.map(d => d.date.slice(5));
+                if (mode === 'cost') {
+                    CH['ov'] = new Chart(document.getElementById('ov-c'), {
+                        type: 'line',
+                        data: {
+                            labels: lb, datasets: [
+                                { label: 'Import cost', data: range.map(d => +(d.import_day_cost + d.import_night_cost).toFixed(3)), borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.1)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 },
+                                { label: 'Export credit', data: range.map(d => +d.export_credit.toFixed(3)), borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.1)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 },
+                                { label: 'Net cost', data: range.map(d => +d.total_cost.toFixed(3)), borderColor: '#f78166', fill: false, tension: 0.3, pointRadius: 0, borderWidth: 2, borderDash: [5, 3] },
+                            ]
+                        },
+                        options: OPTS(v => '€' + v.toFixed(2))
+                    });
+                    legend('ov-l', [['#58a6ff', 'Import cost'], ['#3fb950', 'Export credit'], ['#f78166', 'Net cost', true]]);
+                } else {
+                    CH['ov'] = new Chart(document.getElementById('ov-c'), {
+                        type: 'bar',
+                        data: {
+                            labels: lb, datasets: [
+                                { label: 'Day import', data: range.map(d => d.import_day_kwh), backgroundColor: '#58a6ff', stack: 'a', borderRadius: 2 },
+                                { label: 'Night import', data: range.map(d => d.import_night_kwh), backgroundColor: '#bc8cff', stack: 'a' },
+                                { label: 'Export', data: range.map(d => d.export_kwh), backgroundColor: '#3fb950', borderRadius: 2 },
+                            ]
+                        },
+                        options: OPTS(v => v.toFixed(0) + ' kWh')
+                    });
+                    legend('ov-l', [['#58a6ff', 'Day import'], ['#bc8cff', 'Night import'], ['#3fb950', 'Export']]);
+                }
+                fetch(`${API}/status`).then(r => r.json()).then(s => {
+                    if (s.latest_reading) document.getElementById('as-of').textContent = 'data to ' + s.latest_reading.slice(0, 10);
+                }).catch(() => { });
+            } catch (e) {
+                document.getElementById('ov-m').innerHTML = `<div class="spinner err">Could not reach API at ${API}</div>`;
+            }
+        }
+
+        async function loadUs() {
+            const s = document.getElementById('us-s').value, e = document.getElementById('us-e').value;
+            killC('us');
+            try {
+                const range = await fetch(`${API}/range?start=${s}&end=${e}`).then(r => r.json());
+                CH['us'] = new Chart(document.getElementById('us-c'), {
+                    type: 'bar',
+                    data: {
+                        labels: range.map(d => d.date.slice(5)), datasets: [
+                            { label: 'Day import', data: range.map(d => d.import_day_kwh), backgroundColor: '#58a6ff', stack: 'a', borderRadius: 2 },
+                            { label: 'Night import', data: range.map(d => d.import_night_kwh), backgroundColor: '#bc8cff', stack: 'a' },
+                            { label: 'Export', data: range.map(d => d.export_kwh), backgroundColor: '#3fb950', borderRadius: 2 },
+                        ]
+                    },
+                    options: OPTS(v => v.toFixed(0) + ' kWh')
+                });
+                legend('us-l', [['#58a6ff', 'Day import'], ['#bc8cff', 'Night import'], ['#3fb950', 'Export']]);
+            } catch (e) { }
+        }
+
+        async function loadCo() {
+            const s = document.getElementById('co-s').value, e = document.getElementById('co-e').value;
+            killC('co');
+            document.getElementById('co-bd').innerHTML = '<div class="spinner">Loading…</div>';
+            try {
+                const [r1, r2] = await Promise.all([fetch(`${API}/range?start=${s}&end=${e}`), fetch(`${API}/billing?start=${s}&end=${e}`)]);
+                const [range, summ] = await Promise.all([r1.json(), r2.json()]);
+                const s2 = summ;
+                document.getElementById('co-bd').innerHTML = `
+      <div class="breakdown">
+        ${[
+                        ['Day import (' + s2.import_day_kwh.toFixed(1) + ' kWh)', eu(s2.import_day_cost), ''],
+                        ['Night import (' + s2.import_night_kwh.toFixed(1) + ' kWh)', eu(s2.import_night_cost), ''],
+                        ['Standing charge (' + s2.days_with_data + ' days)', eu(s2.standing_charge), ''],
+                        ['PSO levy (' + s2.days_with_data + ' days)', eu(s2.pso_levy), ''],
+                        ['VAT 9%', eu(s2.vat), ''],
+                        ['Export credit', '−' + eu(s2.export_credit), 'gn'],
+                    ].map(([l, v, c]) => `<div class="brow"><span class="blabel">${l}</span><span class="bval ${c}">${v}</span></div>`).join('')}
+        <div class="brow total"><span>Net total</span><span class="bval ${s2.total_cost < 0 ? 'gn' : 'rd'}">${eu(s2.total_cost)}</span></div>
+      </div>`;
+                CH['co'] = new Chart(document.getElementById('co-c'), {
+                    type: 'bar',
+                    data: {
+                        labels: range.map(d => d.date.slice(5)), datasets: [
+                            { label: 'Import cost', data: range.map(d => +(d.import_day_cost + d.import_night_cost).toFixed(3)), backgroundColor: '#58a6ff', borderRadius: 2 },
+                            { label: 'Export credit', data: range.map(d => +d.export_credit.toFixed(3)), backgroundColor: '#3fb950', borderRadius: 2 },
+                            { label: 'Net cost', data: range.map(d => +d.total_cost.toFixed(3)), backgroundColor: range.map(d => d.total_cost < 0 ? 'rgba(63,185,80,0.45)' : 'rgba(247,129,102,0.45)'), borderRadius: 2 },
+                        ]
+                    },
+                    options: OPTS(v => '€' + v.toFixed(2))
+                });
+            } catch (e) { }
+        }
+
+        async function loadBi() {
+            const s = document.getElementById('bi-s').value, e = document.getElementById('bi-e').value;
+            if (!s || !e) return;
+            document.getElementById('bi-r').innerHTML = '<div class="spinner">Calculating…</div>';
+            try {
+                const res = await fetch(`${API}/billing?start=${s}&end=${e}`);
+                const d = await res.json();
+                if (d.detail) { document.getElementById('bi-r').innerHTML = `<div class="spinner err">${d.detail}</div>`; return; }
+                document.getElementById('bi-r').innerHTML = `
+      <div class="grid2">
+        <div class="breakdown">
+          ${[
+                        ['Day import (' + d.import_day_kwh.toFixed(1) + ' kWh)', eu(d.import_day_cost), ''],
+                        ['Night import (' + d.import_night_kwh.toFixed(1) + ' kWh)', eu(d.import_night_cost), ''],
+                        ['Standing charge (' + d.days_with_data + ' days)', eu(d.standing_charge), ''],
+                        ['PSO levy (' + d.days_with_data + ' days)', eu(d.pso_levy), ''],
+                        ['VAT 9%', eu(d.vat), ''],
+                        ['Export credit', '−' + eu(d.export_credit), 'gn'],
+                    ].map(([l, v, c]) => `<div class="brow"><span class="blabel">${l}</span><span class="bval ${c}">${v}</span></div>`).join('')}
+          <div class="brow total"><span>Estimated bill</span><span class="bval ${d.total_cost < 0 ? 'gn' : 'rd'}">${eu(d.total_cost)}</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${[
+                        ['Imported', (d.import_day_kwh + d.import_night_kwh).toFixed(1) + ' kWh', 'bl'],
+                        ['Exported', d.export_kwh.toFixed(1) + ' kWh', 'gn'],
+                        ['Period', d.days_with_data + ' days', ''],
+                        ['Daily avg', eu(d.total_cost / d.days_with_data), d.total_cost < 0 ? 'gn' : 'am'],
+                    ].map(([l, v, c]) => `<div class="metric"><div class="metric-label">${l}</div><div class="metric-value ${c}" style="font-size:20px">${v}</div></div>`).join('')}
+        </div>
+      </div>`;
+            } catch (e) { document.getElementById('bi-r').innerHTML = '<div class="spinner err">Error loading data</div>'; }
+        }
+
+        init();
+        loadOv();
+    </script>
+</body>
+
+</html>

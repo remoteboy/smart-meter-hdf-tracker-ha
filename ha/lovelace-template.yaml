@@ -1,0 +1,204 @@
+views:
+  - title: Energy costs
+    path: energy-costs
+    icon: mdi:cash-multiple
+    type: panel
+    cards:
+      - type: custom:html-template-card
+        ignore_line_breaks: true
+        content: >
+          <style>
+            .ec-wrap {
+              display: grid;
+              grid-template-columns: 22% 1fr;
+              gap: 12px;
+              padding: 12px;
+              height: calc(100vh - 56px);
+              box-sizing: border-box;
+              background: var(--primary-background-color);
+            }
+            @media (max-width: 600px) {
+              .ec-wrap {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: auto;
+              }
+              .ec-right {
+                height: 85vh;
+              }
+            }
+            .ec-left {
+              background: var(--card-background-color);
+              border-radius: 12px;
+              padding: 20px 16px;
+              display: flex;
+              flex-direction: column;
+              overflow-y: auto;
+              box-shadow: var(--ha-card-box-shadow, none);
+            }
+            .ec-right {
+              border-radius: 12px;
+              overflow: hidden;
+            }
+            .ec-right iframe {
+              width: 100%;
+              height: 100%;
+              border: none;
+              border-radius: 12px;
+            }
+            .sec-label {
+              font-size: 10px;
+              font-weight: 600;
+              letter-spacing: 0.09em;
+              text-transform: uppercase;
+              color: var(--secondary-text-color);
+              margin-bottom: 8px;
+            }
+            .hero-num {
+              font-size: 38px;
+              font-weight: 700;
+              letter-spacing: -0.02em;
+              line-height: 1;
+              margin-bottom: 4px;
+            }
+            .hero-sub {
+              font-size: 12px;
+              color: var(--secondary-text-color);
+              margin-bottom: 18px;
+            }
+            .divider {
+              border: none;
+              border-top: 1px solid var(--divider-color);
+              margin: 14px 0;
+            }
+            .row {
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              margin-bottom: 7px;
+            }
+            .row-label {
+              font-size: 13px;
+              color: var(--secondary-text-color);
+            }
+            .row-val {
+              font-size: 13px;
+              font-weight: 600;
+              color: var(--primary-text-color);
+            }
+            .green { color: var(--success-color); }
+            .orange { color: var(--warning-color); }
+            .blue { color: var(--info-color); }
+            .yest-num {
+              font-size: 24px;
+              font-weight: 600;
+              line-height: 1;
+              margin-bottom: 3px;
+            }
+            .yest-sub {
+              font-size: 11px;
+              color: var(--secondary-text-color);
+              line-height: 1.5;
+            }
+            .spacer { flex: 1; }
+            .data-as-of {
+              font-size: 10px;
+              color: var(--disabled-text-color);
+              margin-top: 12px;
+            }
+          </style>
+
+
+          {% set mn  = states('sensor.esb_month_net_cost')      | float(0) %}
+
+          {% set mi  = states('sensor.esb_month_import_cost')   | float(0) %}
+
+          {% set me  = states('sensor.esb_month_export_credit') | float(0) %}
+
+          {% set mv  = states('sensor.esb_month_vat')           | float(0) %}
+
+          {% set mik = states('sensor.esb_month_import_kwh')    | float(0) %}
+
+          {% set mek = states('sensor.esb_month_export_kwh')    | float(0) %}
+
+          {% set yn  = states('sensor.esb_yesterday_net_cost')  | float(0) %}
+
+          {% set yi  = states('sensor.esb_yesterday_import_cost')   | float(0)
+          %}
+
+          {% set ye  = states('sensor.esb_yesterday_export_credit') | float(0)
+          %}
+
+          {% set sc  = mn - mi + me - mv %}
+
+          {% set dao = states('sensor.esb_data_as_of') %}
+
+
+          <div class="ec-wrap">
+            <div class="ec-left">
+
+              <div class="sec-label">This month</div>
+              <div class="hero-num {% if mn < 0 %}green{% else %}orange{% endif %}">
+                {% if mn < 0 %}−€{{ (mn | abs) | round(2) }}{% else %}€{{ mn | round(2) }}{% endif %}
+              </div>
+              <div class="hero-sub">
+                {% if mn < 0 %}in credit this month{% else %}net cost this month{% endif %}
+              </div>
+
+              <hr class="divider">
+              <div class="sec-label">Breakdown</div>
+
+              <div class="row">
+                <span class="row-label">Import</span>
+                <span class="row-val">€{{ mi | round(2) }}</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Export credit</span>
+                <span class="row-val green">−€{{ me | round(2) }}</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Standing + PSO</span>
+                <span class="row-val">€{{ sc | round(2) }}</span>
+              </div>
+              <div class="row">
+                <span class="row-label">VAT 9%</span>
+                <span class="row-val">€{{ mv | round(2) }}</span>
+              </div>
+
+              <hr class="divider">
+              <div class="sec-label">Usage</div>
+
+              <div class="row">
+                <span class="row-label">Imported</span>
+                <span class="row-val blue">{{ mik | round(1) }} kWh</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Exported</span>
+                <span class="row-val green">{{ mek | round(1) }} kWh</span>
+              </div>
+
+              <hr class="divider">
+              <div class="sec-label">Yesterday</div>
+
+              <div class="yest-num {% if yn < 0 %}green{% elif yn == 0 %}{% else %}orange{% endif %}">
+                {% if yn == 0 %}—
+                {% elif yn < 0 %}−€{{ (yn | abs) | round(2) }}
+                {% else %}€{{ yn | round(2) }}{% endif %}
+              </div>
+              <div class="yest-sub">
+                {% if yn == 0 %}
+                  Data not yet available
+                {% else %}
+                  Import €{{ yi | round(2) }} · Export −€{{ ye | round(2) }}
+                {% endif %}
+              </div>
+
+              <div class="spacer"></div>
+              <div class="data-as-of">Data to {{ dao[:10] }}</div>
+
+            </div>
+
+            <div class="ec-right">
+              <iframe src="http://YOUR_LXC_IP:8000/dashboard/" allowfullscreen></iframe>
+            </div>
+          </div>

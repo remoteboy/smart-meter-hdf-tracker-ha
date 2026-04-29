@@ -1,0 +1,11 @@
+[Unit]
+Description=ESB Energy Scraper
+After=network.target
+
+[Service]
+Type=oneshot
+User=esb
+WorkingDirectory=/opt/esb-energy
+ExecStart=/opt/esb-energy/venv/bin/python -m scraper.download
+StandardOutput=journal
+StandardError=journal

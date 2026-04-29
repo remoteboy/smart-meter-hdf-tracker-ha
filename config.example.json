@@ -1,0 +1,51 @@
+{
+  "_comment": "Copy this to config.json and fill in your values. Alternatively use environment variables — see docker-compose.yml.",
+
+  "esb": {
+    "username": "your@email.com",
+    "password": "yourpassword",
+    "mprn": "10001234567"
+  },
+
+  "two_captcha_api_key": "your_2captcha_api_key",
+
+  "tariffs": [
+    {
+      "_comment": "Add a new entry whenever unit rates change. Uses the most recent entry effective on or before each reading date. All rates ex VAT.",
+      "effective_from": "2024-01-01",
+      "import_day_rate": 0.231,
+      "import_night_rate": 0.116,
+      "export_rate": 0.185
+    }
+  ],
+
+  "standing_charges": [
+    {
+      "_comment": "Daily network standing charge ex VAT. Add entries as rates change.",
+      "effective_from": "2024-01-01",
+      "import_daily": 0.8911
+    }
+  ],
+
+  "pso_levy": [
+    {
+      "_comment": "Government PSO levy as monthly figure ex VAT. Changes each October.",
+      "effective_from": "2024-01-01",
+      "monthly": 0.0
+    },
+    {
+      "effective_from": "2025-10-01",
+      "monthly": 1.46
+    }
+  ],
+
+  "night_hours": {
+    "_comment": "Night rate window in Irish clock time. DST is handled automatically.",
+    "start": "23:00",
+    "end": "08:00"
+  },
+
+  "vat_rate": 0.09,
+
+  "data_dir": "/data"
+}

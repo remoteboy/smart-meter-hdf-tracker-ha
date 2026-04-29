@@ -1,0 +1,42 @@
+services:
+  esb-energy:
+    image: esb-energy:latest
+    # Or use a pre-built image:
+    # image: ghcr.io/yourusername/esb-energy:latest
+    build: .
+    container_name: esb-energy
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent data — SQLite DB, cookies, downloaded CSVs
+      - ./data:/data
+      # Optional: mount your own config.json instead of env vars
+      # - ./config.json:/app/config.json:ro
+    environment:
+      # Timezone — critical for scraper schedule and DST
+      TZ: Europe/Dublin
+
+      # ESB Networks credentials
+      ESB_USERNAME: your@email.com
+      ESB_PASSWORD: yourpassword
+      ESB_MPRN: "10001234567"
+
+      # 2captcha API key
+      TWO_CAPTCHA_KEY: your_2captcha_key
+
+      # Scraper schedule (24h, container local time)
+      SCRAPER_TIME: "02:30"
+
+      # Set true to run scraper immediately on first start
+      RUN_ON_START: "false"
+
+      # Night rate hours (Irish clock time)
+      NIGHT_START: "23:00"
+      NIGHT_END: "08:00"
+
+      # VAT rate
+      VAT_RATE: "0.09"
+
+      # Data directory (match the volume above)
+      DATA_DIR: /data
