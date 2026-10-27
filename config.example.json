@@ -11,11 +11,24 @@
 
   "tariffs": [
     {
-      "_comment": "Add a new entry whenever unit rates change. Uses the most recent entry effective on or before each reading date. All rates ex VAT.",
+      "_comment": "Standard day/night tariff (no boost or peak). Add a new entry whenever rates change; historical entries are kept to cost older data correctly.",
       "effective_from": "2024-01-01",
-      "import_day_rate": 0.231,
-      "import_night_rate": 0.116,
-      "export_rate": 0.185
+      "import_day_rate":   0.2310,
+      "import_night_rate": 0.1160,
+      "export_rate":       0.1850
+    },
+    {
+      "_comment": "Example: Electric Ireland Home Dual + Night Boost (three-band tariff). import_night_boost_rate and night_boost_hours are optional — omit them for a plain day/night tariff. A future peak tariff would add import_peak_rate and peak_hours in the same way.",
+      "effective_from": "2026-10-17",
+      "import_day_rate":         0.3340,
+      "import_night_rate":       0.1647,
+      "import_night_boost_rate": 0.0966,
+      "night_boost_hours": {
+        "_comment": "Night Boost window — must fall inside night_hours below.",
+        "start": "02:00",
+        "end":   "04:00"
+      },
+      "export_rate": 0.1850
     }
   ],
 
@@ -24,6 +37,10 @@
       "_comment": "Daily network standing charge ex VAT. Add entries as rates change.",
       "effective_from": "2024-01-01",
       "import_daily": 0.8911
+    },
+    {
+      "effective_from": "2026-10-17",
+      "import_daily": 0.7577
     }
   ],
 
@@ -36,13 +53,17 @@
     {
       "effective_from": "2025-10-01",
       "monthly": 1.46
+    },
+    {
+      "effective_from": "2026-10-01",
+      "monthly": 0.4679
     }
   ],
 
   "night_hours": {
-    "_comment": "Night rate window in Irish clock time. DST is handled automatically.",
+    "_comment": "Night rate window in Irish clock time. DST is handled automatically. The boost window (if any) must fall within this range.",
     "start": "23:00",
-    "end": "08:00"
+    "end":   "08:00"
   },
 
   "vat_rate": 0.09,

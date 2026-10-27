@@ -116,11 +116,20 @@ Open `http://<LXC-IP>:8000/dashboard/` to see the web dashboard.
 
   "tariffs": [
     {
-      "_comment": "Add a new entry whenever unit rates change.",
+      "_comment": "Standard day/night tariff.",
       "effective_from": "2025-10-17",
       "import_day_rate":   0.2310,
       "import_night_rate": 0.1160,
       "export_rate":       0.1850
+    },
+    {
+      "_comment": "Three-band tariff with Night Boost (e.g. Electric Ireland Home Dual + Night Boost). import_night_boost_rate and night_boost_hours are optional — omit them for a plain day/night plan.",
+      "effective_from": "2026-10-17",
+      "import_day_rate":         0.3340,
+      "import_night_rate":       0.1647,
+      "import_night_boost_rate": 0.0966,
+      "night_boost_hours": { "start": "02:00", "end": "04:00" },
+      "export_rate": 0.1850
     }
   ],
 
@@ -141,7 +150,7 @@ Open `http://<LXC-IP>:8000/dashboard/` to see the web dashboard.
   ],
 
   "night_hours": {
-    "_comment": "Night rate window in Irish clock time. DST handled automatically.",
+    "_comment": "Night rate window in Irish clock time. DST handled automatically. The boost window must fall within this range.",
     "start": "23:00",
     "end":   "08:00"
   },
@@ -153,6 +162,19 @@ Open `http://<LXC-IP>:8000/dashboard/` to see the web dashboard.
 ```
 
 All rates are **ex VAT**. To add a price change, add a new entry to the relevant array — older entries are preserved and used to cost historical data correctly.
+
+### Tariff rate bands
+
+The tariff engine supports up to four rate bands per tariff entry:
+
+| Band | Config fields | Description |
+|---|---|---|
+| Day | `import_day_rate` | Default — any interval not in another window |
+| Night | `import_night_rate` | Defined by `night_hours` |
+| Night Boost | `import_night_boost_rate` + `night_boost_hours` | Optional sub-window of night (e.g. 02:00–04:00) |
+| Peak | `import_peak_rate` + `peak_hours` | Optional sub-window of day (for smart tariffs — not yet in use) |
+
+Boost and peak fields are optional and backward-compatible — existing configs without them continue to work unchanged. Priority order when classifying an interval: boost → peak → night → day.
 
 ---
 

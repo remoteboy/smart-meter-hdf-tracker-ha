@@ -291,9 +291,10 @@ def ha_sensors():
     def safe_summary(rows):
         if not rows:
             return {k: 0 for k in [
-                "import_day_kwh","import_night_kwh","export_kwh",
-                "import_day_cost","import_night_cost","export_credit",
-                "standing_charge","pso_levy","vat","total_cost"
+                "import_day_kwh","import_night_kwh","import_boost_kwh","import_peak_kwh",
+                "export_kwh",
+                "import_day_cost","import_night_cost","import_boost_cost","import_peak_cost",
+                "export_credit","standing_charge","pso_levy","vat","total_cost"
             ]}
         return daily_summary(rows, config)
 
@@ -312,38 +313,48 @@ def ha_sensors():
 
     return {
         # Today
-        "today_import_kwh":        round(t["import_day_kwh"] + t["import_night_kwh"], 3),
-        "today_import_day_kwh":    t["import_day_kwh"],
-        "today_import_night_kwh":  t["import_night_kwh"],
-        "today_export_kwh":        t["export_kwh"],
-        "today_import_cost":       round(t["import_day_cost"] + t["import_night_cost"], 4),
-        "today_export_credit":     t["export_credit"],
-        "today_standing_charge":   t["standing_charge"],
-        "today_pso_levy":          t["pso_levy"],
-        "today_vat":               t["vat"],
-        "today_total_cost":        t["total_cost"],
+        "today_import_kwh":         round(t["import_day_kwh"] + t["import_night_kwh"] + t["import_boost_kwh"] + t["import_peak_kwh"], 3),
+        "today_import_day_kwh":     t["import_day_kwh"],
+        "today_import_night_kwh":   t["import_night_kwh"],
+        "today_import_boost_kwh":   t["import_boost_kwh"],
+        "today_import_peak_kwh":    t["import_peak_kwh"],
+        "today_export_kwh":         t["export_kwh"],
+        "today_import_cost":        round(t["import_day_cost"] + t["import_night_cost"] + t["import_boost_cost"] + t["import_peak_cost"], 4),
+        "today_export_credit":      t["export_credit"],
+        "today_standing_charge":    t["standing_charge"],
+        "today_pso_levy":           t["pso_levy"],
+        "today_vat":                t["vat"],
+        "today_total_cost":         t["total_cost"],
 
         # Yesterday
-        "yesterday_import_kwh":    round(y["import_day_kwh"] + y["import_night_kwh"], 3),
-        "yesterday_export_kwh":    y["export_kwh"],
-        "yesterday_import_cost":   round(y["import_day_cost"] + y["import_night_cost"], 4),
-        "yesterday_export_credit": y["export_credit"],
+        "yesterday_import_kwh":     round(y["import_day_kwh"] + y["import_night_kwh"] + y["import_boost_kwh"] + y["import_peak_kwh"], 3),
+        "yesterday_import_day_kwh": y["import_day_kwh"],
+        "yesterday_import_night_kwh": y["import_night_kwh"],
+        "yesterday_import_boost_kwh": y["import_boost_kwh"],
+        "yesterday_import_peak_kwh":  y["import_peak_kwh"],
+        "yesterday_export_kwh":     y["export_kwh"],
+        "yesterday_import_cost":    round(y["import_day_cost"] + y["import_night_cost"] + y["import_boost_cost"] + y["import_peak_cost"], 4),
+        "yesterday_export_credit":  y["export_credit"],
         "yesterday_standing_charge": y["standing_charge"],
-        "yesterday_pso_levy":      y["pso_levy"],
-        "yesterday_vat":           y["vat"],
-        "yesterday_total_cost":    y["total_cost"],
+        "yesterday_pso_levy":       y["pso_levy"],
+        "yesterday_vat":            y["vat"],
+        "yesterday_total_cost":     y["total_cost"],
 
         # Month to date
-        "month_import_kwh":        round(m["import_day_kwh"] + m["import_night_kwh"], 3),
-        "month_export_kwh":        m["export_kwh"],
-        "month_import_cost":       round(m["import_day_cost"] + m["import_night_cost"], 4),
-        "month_export_credit":     m["export_credit"],
-        "month_standing_charge":   m["standing_charge"],
-        "month_pso_levy":          m["pso_levy"],
-        "month_vat":               m["vat"],
-        "month_total_cost":        m["total_cost"],
+        "month_import_kwh":         round(m["import_day_kwh"] + m["import_night_kwh"] + m["import_boost_kwh"] + m["import_peak_kwh"], 3),
+        "month_import_day_kwh":     m["import_day_kwh"],
+        "month_import_night_kwh":   m["import_night_kwh"],
+        "month_import_boost_kwh":   m["import_boost_kwh"],
+        "month_import_peak_kwh":    m["import_peak_kwh"],
+        "month_export_kwh":         m["export_kwh"],
+        "month_import_cost":        round(m["import_day_cost"] + m["import_night_cost"] + m["import_boost_cost"] + m["import_peak_cost"], 4),
+        "month_export_credit":      m["export_credit"],
+        "month_standing_charge":    m["standing_charge"],
+        "month_pso_levy":           m["pso_levy"],
+        "month_vat":                m["vat"],
+        "month_total_cost":         m["total_cost"],
 
         # Meta
-        "data_as_of":              latest,
-        "updated_at":              ie_now.isoformat(),
+        "data_as_of":               latest,
+        "updated_at":               ie_now.isoformat(),
     }
